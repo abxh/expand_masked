@@ -1,9 +1,17 @@
 -- | expand-filter implementation well-suited when segment sizes are bounded and small.
 
-import "bitmask"
 import "../../diku-dk/segmented/segmented"
 
-module expand_masked_generic (M: bitmask) = {
+module type partial_bitmask = {
+  type t
+  val num_bits : i64
+  val empty : t
+  val rank : t -> i64
+  val set : t -> i64 -> bool -> t
+  val select : t -> i64 -> i64
+}
+
+module expand_masked_generic (M: partial_bitmask) = {
   def expand_masked 'a 'b
                     (max_sz: a -> i64)
                     (get: a -> i64 -> b)
@@ -17,6 +25,8 @@ module expand_masked_generic (M: bitmask) = {
     let get' (x, mask) i = get x (M.select mask i)
     in zip arr (map f arr) |> expand (\(_, mask) -> M.rank mask) get'
 }
+
+import "bitmask"
 
 local module expand_masked_8 = expand_masked_generic bitmask_8
 local module expand_masked_16 = expand_masked_generic bitmask_16

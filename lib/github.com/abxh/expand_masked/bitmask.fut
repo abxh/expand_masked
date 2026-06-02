@@ -1,4 +1,4 @@
--- | minimal bitmask implementation for expand_mask
+-- | tiny bitmask implementation
 --
 -- Inspiration:
 -- github.com/athas/vector
@@ -70,22 +70,53 @@ def select_u64 (b: u64) (k: i64) : i64 =
 
 module type bitmask = {
   type t
-  val empty : t
   val num_bits : i64
+  val empty : t
+  val is_empty : t -> bool
   val rank : t -> i64
+
+  val union : t -> t -> t
+  val intersection : t -> t -> t
+  val difference : t -> t -> t
+  val complement : t -> t
+  val is_subset : t -> t -> bool
+  val (==) : t -> t -> bool
+
+  val member : t -> i64 -> bool
   val set : t -> i64 -> bool -> t
   val select : t -> i64 -> i64
+
+  val from_pred : (i64 -> bool) -> t
+  val to_array : t -> [num_bits]bool
 }
 
 local
 module bitmask_1 (T: integral) (F: {val select : T.t -> i64 -> i64}) : bitmask = {
   type t = T.t
 
-  def empty = T.i32 0
   def num_bits = i64.i32 T.num_bits
+  def empty = T.i32 0
+  def is_empty = (T.==) empty
   def rank (b: t) = T.popc b |> i64.i32
+
+  def complement (x: t) = (T.not) x
+  def union (l: t) (r: t) = (T.|) l r
+  def intersection (l: t) (r: t) = (T.&) l r
+  def difference (l: t) (r: t) = l `intersection` complement r
+  def is_subset (l: t) (r: t) = (l `difference` r) T.== empty
+  def (==) = (T.==)
+
+  def member (b: t) (pos: i64) = T.get_bit (i32.i64 pos) b i32.== 1
   def set (b: t) (pos: i64) (v: bool) = T.set_bit (i32.i64 pos) b (i32.bool v)
   def select = F.select
+
+  def from_pred (f: i64 -> bool) : t =
+    loop b = empty
+    for pos in 0..<num_bits do
+      set b pos (f pos)
+
+  def to_array (b: t) : []bool =
+    tabulate num_bits (member b)
 }
 
 local
@@ -94,16 +125,41 @@ module cat_bitmask (L: bitmask) (R: bitmask) : bitmask = {
 
   def num_bits = L.num_bits + R.num_bits
   def empty = (L.empty, R.empty)
+  def is_empty (l, r) = L.is_empty l && R.is_empty r
   def rank ((l, r): (L.t, R.t)) = L.rank l + R.rank r
+
+  def complement (l, r) = (L.complement l, R.complement r)
+  def union (l0, r0) (l1, r1) = (l0 `L.union` l1, r0 `R.union` r1)
+  def intersection (l0, r0) (l1, r1) = (l0 `L.intersection` l1, r0 `R.intersection` r1)
+  def difference (l0, r0) (l1, r1) = (l0 `L.difference` l1, r0 `R.difference` r1)
+  def is_subset (l0, r0) (l1, r1) = (l0 `L.is_subset` l1) && (r0 `R.is_subset` r1)
+  def (==) (l0, r0) (l1, r1) = (l0 L.== l1) && (r0 R.== r1)
+
+  def member (l, r) (pos: i64) =
+    if pos < L.num_bits
+    then L.member l pos
+    else R.member r (pos - L.num_bits)
+
   def set ((l, r): (L.t, R.t)) (pos: i64) (v: bool) =
     if pos < L.num_bits
     then (L.set l pos v, r)
     else (l, R.set r (pos - L.num_bits) v)
+
   def select ((l, r): (L.t, R.t)) (i: i64) : i64 =
     let l_rank = L.rank l
     in if i < l_rank
        then L.select l i
        else R.select r (i - l_rank) + L.num_bits
+
+  def from_pred (f: i64 -> bool) : t =
+    let l_pred i = f i
+    let r_pred i = f (i + L.num_bits)
+    in ( L.from_pred l_pred
+       , R.from_pred r_pred
+       )
+
+  def to_array (b: t) : []bool =
+    tabulate num_bits (member b)
 }
 
 module bitmask_8 = bitmask_1 u8 {def select = select_u8}
