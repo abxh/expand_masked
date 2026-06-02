@@ -6,8 +6,8 @@ import "../../diku-dk/segmented/segmented"
 module expand_masked_generic (M: bitmask) = {
   def expand_masked 'a 'b
                     (max_sz: a -> i64)
-                    (pred: a -> i64 -> bool)
                     (get: a -> i64 -> b)
+                    (pred: a -> i64 -> bool)
                     (arr: []a) : []b =
     let f x =
       let pred' = pred x
@@ -33,23 +33,23 @@ local module expand_masked_512 = expand_masked_generic bitmask_512
 def expand_masked 'a 'b
                   (max_segment_size: i64)
                   (max_sz: a -> i64)
-                  (pred: a -> i64 -> bool)
                   (get: a -> i64 -> b)
+                  (pred: a -> i64 -> bool)
                   (arr: []a) : []b =
   if max_segment_size <= 8
-  then expand_masked_8.expand_masked max_sz pred get arr
+  then expand_masked_8.expand_masked max_sz get pred arr
   else if max_segment_size <= 16
-  then expand_masked_16.expand_masked max_sz pred get arr
+  then expand_masked_16.expand_masked max_sz get pred arr
   else if max_segment_size <= 32
-  then expand_masked_32.expand_masked max_sz pred get arr
+  then expand_masked_32.expand_masked max_sz get pred arr
   else if max_segment_size <= 64
-  then expand_masked_64.expand_masked max_sz pred get arr
+  then expand_masked_64.expand_masked max_sz get pred arr
   else if max_segment_size <= 128
-  then expand_masked_128.expand_masked max_sz pred get arr
+  then expand_masked_128.expand_masked max_sz get pred arr
   else if max_segment_size <= 256
-  then expand_masked_256.expand_masked max_sz pred get arr
+  then expand_masked_256.expand_masked max_sz get pred arr
   else if max_segment_size <= 512
-  then expand_masked_512.expand_masked max_sz pred get arr
+  then expand_masked_512.expand_masked max_sz get pred arr
   else let get' x i = (get x i, x, i)
        in expand max_sz get' arr
           |> filter (\(_, x, i) -> pred x i)
