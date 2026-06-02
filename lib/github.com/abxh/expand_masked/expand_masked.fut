@@ -55,23 +55,23 @@ def expand_masked 'a 'b
           |> filter (\(_, x, i) -> pred x i)
           |> map (.0)
 
--- | expand with segments expanding to at most 8 elements
+-- | expand with segments expanding to at most 8 elements pr segment
 def expand_masked_8 = expand_masked_8.expand_masked
 
--- | expand with segments expanding to at most 16 elements
+-- | expand with segments expanding to at most 16 elements pr segment
 def expand_masked_16 = expand_masked_16.expand_masked
 
--- | expand with segments expanding to at most 16 elements
+-- | expand with segments expanding to at most 16 elements pr segment
 def expand_masked_32 = expand_masked_32.expand_masked
 
--- | expand with segments expanding to at most 32 elements
+-- | expand with segments expanding to at most 32 elements pr segment
 def expand_masked_64 = expand_masked_64.expand_masked
 
--- | expand with segments expanding to at most 64 elements
+-- | expand with segments expanding to at most 64 elements pr segment
 def expand_masked_128 = expand_masked_128.expand_masked
 
--- | expand with segments expanding to at most 256 elements
+-- | expand with segments expanding to at most 256 elements pr segment
 def expand_masked_256 = expand_masked_256.expand_masked
 
--- | expand with segments expanding to at most 512 elements
+-- | expand with segments expanding to at most 512 elements pr segment
 def expand_masked_512 = expand_masked_512.expand_masked
