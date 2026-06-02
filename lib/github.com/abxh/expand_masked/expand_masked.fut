@@ -10,9 +10,10 @@ module expand_masked_generic (M: bitmask) = {
                     (get: a -> i64 -> b)
                     (arr: []a) : []b =
     let f x =
-      loop mask = M.empty
-      for i < i64.min M.num_bits (sz x) do
-        M.set mask i (pred x i)
+      let pred' = pred x
+      in loop mask = M.empty
+         for i < i64.min M.num_bits (sz x) do
+           M.set mask i (pred' i)
     let get' (x, mask) i = get x (M.select mask i)
     in zip arr (map f arr) |> expand (\(_, mask) -> M.rank mask) get'
 }
