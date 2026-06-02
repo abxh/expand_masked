@@ -5,14 +5,14 @@ import "../../diku-dk/segmented/segmented"
 
 module expand_masked_generic (M: bitmask) = {
   def expand_masked 'a 'b
-                    (sz: a -> i64)
+                    (max_sz: a -> i64)
                     (pred: a -> i64 -> bool)
                     (get: a -> i64 -> b)
                     (arr: []a) : []b =
     let f x =
       let pred' = pred x
       in loop mask = M.empty
-         for i < i64.min M.num_bits (sz x) do
+         for i < i64.min M.num_bits (max_sz x) do
            M.set mask i (pred' i)
     let get' (x, mask) i = get x (M.select mask i)
     in zip arr (map f arr) |> expand (\(_, mask) -> M.rank mask) get'
@@ -32,26 +32,26 @@ local module expand_masked_512 = expand_masked_generic bitmask_512
 -- Falls back to regular filtering if max_segment_size is larger than 512.
 def expand_masked 'a 'b
                   (max_segment_size: i64)
-                  (sz: a -> i64)
+                  (max_sz: a -> i64)
                   (pred: a -> i64 -> bool)
                   (get: a -> i64 -> b)
                   (arr: []a) : []b =
   if max_segment_size <= 8
-  then expand_masked_8.expand_masked sz pred get arr
+  then expand_masked_8.expand_masked max_sz pred get arr
   else if max_segment_size <= 16
-  then expand_masked_16.expand_masked sz pred get arr
+  then expand_masked_16.expand_masked max_sz pred get arr
   else if max_segment_size <= 32
-  then expand_masked_32.expand_masked sz pred get arr
+  then expand_masked_32.expand_masked max_sz pred get arr
   else if max_segment_size <= 64
-  then expand_masked_64.expand_masked sz pred get arr
+  then expand_masked_64.expand_masked max_sz pred get arr
   else if max_segment_size <= 128
-  then expand_masked_128.expand_masked sz pred get arr
+  then expand_masked_128.expand_masked max_sz pred get arr
   else if max_segment_size <= 256
-  then expand_masked_256.expand_masked sz pred get arr
+  then expand_masked_256.expand_masked max_sz pred get arr
   else if max_segment_size <= 512
-  then expand_masked_512.expand_masked sz pred get arr
+  then expand_masked_512.expand_masked max_sz pred get arr
   else let get' x i = (get x i, x, i)
-       in expand sz get' arr
+       in expand max_sz get' arr
           |> filter (\(_, x, i) -> pred x i)
           |> map (.0)
 
