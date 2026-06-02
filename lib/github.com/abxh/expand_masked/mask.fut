@@ -1,4 +1,4 @@
--- | minimal bitmask implementation for expand
+-- | minimal bitmask implementation for expand_mask
 --
 -- Inspiration:
 -- github.com/athas/vector
