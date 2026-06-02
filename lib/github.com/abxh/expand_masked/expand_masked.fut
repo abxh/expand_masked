@@ -28,7 +28,7 @@ local module expand_masked_512 = expand_masked_generic bitmask_512
 -- | expand_masked with dynamic dispatch given max_segment_size selecting
 -- the fixed-size method. Preferably use fixed-size method for better performance.
 --
--- Falls back to regular filtering if max_segment_size is larger than 1024.
+-- Falls back to regular filtering if max_segment_size is larger than 512.
 def expand_masked 'a 'b
                   (max_segment_size: i64)
                   (sz: a -> i64)
