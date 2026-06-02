@@ -1,4 +1,18 @@
 -- | expand-filter implementation well-suited when segment sizes are bounded and small.
+--
+-- ´expand_masked´ filters input segment elements before they are expanded, hence it's
+-- a "masked" expansion rather than a mere expand-filter implementation.
+--
+-- In principle can be implemented as following:
+-- def expand_masked 'a 'b
+--                   (max_sz: a -> i64)
+--                   (get: a -> i64 -> b)
+--                   (pred: a -> i64 -> bool)
+--                   (arr: []a) : []b =
+--   let get' x i = (get x i, x, i)
+--   in expand max_sz get' arr
+--      |> filter (\(_, x, i) -> pred x i)
+--      |> map (.0)
 
 import "../../diku-dk/segmented/segmented"
 
@@ -6,8 +20,8 @@ module type partial_bitmask = {
   type t
   val num_bits : i64
   val empty : t
-  val rank : t -> i64
   val set : t -> i64 -> bool -> t
+  val rank : t -> i64
   val select : t -> i64 -> i64
 }
 
