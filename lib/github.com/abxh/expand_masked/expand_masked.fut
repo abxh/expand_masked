@@ -1,6 +1,6 @@
 -- | expand-filter implementation well-suited when segment sizes are bounded and small.
 
-import "mask"
+import "bitmask"
 import "../../diku-dk/segmented/segmented"
 
 module expand_masked_generic (M: bitmask) = {
