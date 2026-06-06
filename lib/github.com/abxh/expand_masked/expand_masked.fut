@@ -48,12 +48,11 @@ local module expand_masked_32 = expand_masked_generic bitmask_32
 local module expand_masked_64 = expand_masked_generic bitmask_64
 local module expand_masked_128 = expand_masked_generic bitmask_128
 local module expand_masked_256 = expand_masked_generic bitmask_256
-local module expand_masked_512 = expand_masked_generic bitmask_512
 
 -- | expand_masked with dynamic dispatch given max_segment_size selecting
 -- the fixed-size method. Preferably use fixed-size method for better performance.
 --
--- Falls back to regular filtering if max_segment_size is larger than 512.
+-- Falls back to regular filtering if max_segment_size is larger than 256.
 def expand_masked 'a 'b
                   (max_segment_size: i64)
                   (max_sz: a -> i64)
@@ -72,8 +71,6 @@ def expand_masked 'a 'b
   then expand_masked_128.expand_masked max_sz get pred arr
   else if max_segment_size <= 256
   then expand_masked_256.expand_masked max_sz get pred arr
-  else if max_segment_size <= 512
-  then expand_masked_512.expand_masked max_sz get pred arr
   else let get' x i = (get x i, x, i)
        in expand max_sz get' arr
           |> filter (\(_, x, i) -> pred x i)
@@ -96,6 +93,3 @@ def expand_masked_128 = expand_masked_128.expand_masked
 
 -- | expand with segments expanding to at most 256 elements pr segment
 def expand_masked_256 = expand_masked_256.expand_masked
-
--- | expand with segments expanding to at most 512 elements pr segment
-def expand_masked_512 = expand_masked_512.expand_masked

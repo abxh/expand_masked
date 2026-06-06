@@ -11,7 +11,6 @@
 -- module bitmask_64 = bitmask_1 u64 {def select = select_u64}
 -- module bitmask_128 = cat_bitmask bitmask_64 bitmask_64
 -- module bitmask_256 = cat_bitmask bitmask_128 bitmask_128
--- module bitmask_512 = cat_bitmask bitmask_256 bitmask_256
 
 local
 #[inline]
@@ -168,4 +167,3 @@ module bitmask_32 = bitmask_1 u32 {def select = select_u32}
 module bitmask_64 = bitmask_1 u64 {def select = select_u64}
 module bitmask_128 = cat_bitmask bitmask_64 bitmask_64
 module bitmask_256 = cat_bitmask bitmask_128 bitmask_128
-module bitmask_512 = cat_bitmask bitmask_256 bitmask_256
