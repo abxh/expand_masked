@@ -2,30 +2,27 @@
 --
 -- ´expand_masked´ filters input segment elements before they are expanded, hence it's
 -- a "masked" expansion rather than a mere expand-filter implementation.
---
--- In principle can be implemented as following:
--- def expand_masked 'a 'b
---                   (max_sz: a -> i64)
---                   (get: a -> i64 -> b)
---                   (pred: a -> i64 -> bool)
---                   (arr: []a) : []b =
---   let get' x i = (get x i, x, i)
---   in expand max_sz get' arr
---      |> filter (\(_, x, i) -> pred x i)
---      |> map (.0)
 
 import "../../diku-dk/segmented/segmented"
 
-module type partial_bitmask = {
+def expand_filter 'a 'b
+                  (max_sz: a -> i64)
+                  (get: a -> i64 -> b)
+                  (pred: a -> i64 -> bool)
+                  (arr: []a) : []b =
+  let get' x i = (get x i, x, i)
+  in expand max_sz get' arr
+     |> filter (\(_, x, i) -> pred x i)
+     |> map (.0)
+
+module expand_masked_generic (M: {
   type t
   val num_bits : i64
   val empty : t
   val set : t -> i64 -> bool -> t
   val rank : t -> i64
   val select : t -> i64 -> i64
-}
-
-module expand_masked_generic (M: partial_bitmask) = {
+}) = {
   def expand_masked 'a 'b
                     (max_sz: a -> i64)
                     (get: a -> i64 -> b)
@@ -52,7 +49,7 @@ local module expand_masked_256 = expand_masked_generic bitmask_256
 -- | expand_masked with dynamic dispatch given max_segment_size selecting
 -- the fixed-size method. Preferably use fixed-size method for better performance.
 --
--- Falls back to regular filtering if max_segment_size is larger than 256.
+-- Falls back to regular filtering if max_segment_size is larger than 64.
 def expand_masked 'a 'b
                   (max_segment_size: i64)
                   (max_sz: a -> i64)
@@ -67,14 +64,7 @@ def expand_masked 'a 'b
   then expand_masked_32.expand_masked max_sz get pred arr
   else if max_segment_size <= 64
   then expand_masked_64.expand_masked max_sz get pred arr
-  else if max_segment_size <= 128
-  then expand_masked_128.expand_masked max_sz get pred arr
-  else if max_segment_size <= 256
-  then expand_masked_256.expand_masked max_sz get pred arr
-  else let get' x i = (get x i, x, i)
-       in expand max_sz get' arr
-          |> filter (\(_, x, i) -> pred x i)
-          |> map (.0)
+  else expand_filter max_sz get pred arr
 
 -- | expand with segments expanding to at most 8 elements pr segment
 def expand_masked_8 = expand_masked_8.expand_masked
