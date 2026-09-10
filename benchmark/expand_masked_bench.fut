@@ -1,7 +1,7 @@
 -- expand_masked vs naive expand-filter
 --
 -- ==
--- entry: bench bench_filter
+-- entry: bench_masked bench_filter
 -- "irregular_8" script input { (8i64, gen 1000000i64 1i64 8i64) }
 -- "irregular_16" script input { (16i64, gen 1000000i64 1i64 16i64) }
 -- "irregular_32" script input { (32i64, gen 1000000i64 1i64 32i64) }
@@ -27,7 +27,7 @@ def get (x: i64) (i: i64) : i64 =
 def pred (x: i64) (i: i64) : bool =
   (x * 31 + i * 17) % 100 < 50
 
-entry bench (max_segment_size: i64) (xs: []i64) : []i64 =
+entry bench_masked (max_segment_size: i64) (xs: []i64) : []i64 =
   expand_masked max_segment_size id get pred xs
 
 entry bench_filter (_: i64) (xs: []i64) : []i64 =
