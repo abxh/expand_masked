@@ -4,7 +4,8 @@
 
 The benchmarks are done with `1000000` elements with a irregular filtering pattern.
 
-On a Nvidia M2000M, `expand_masked` achieves a consistent speedup of roughly 2x for segment sizes up to 64.
+On an Nvidia M2000M, `expand_masked` provides a ~2x speedup for irregular segment sizes `8-32`, and 
+a 1.7x speedup at size `64`. The advantage disappears for segment sizes `>=128`.
 ```
 expand_masked_bench.fut:bench (no tuning file):
 irregular_8:         5464μs (95% CI: [    5420.8,     5512.7])
