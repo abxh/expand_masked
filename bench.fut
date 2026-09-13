@@ -10,16 +10,22 @@
 -- script input { (256i64, gen 100000i64 0i64 256i64) }
 
 import "../lib/github.com/abxh/expand_masked/expand_masked"
-import "./lib/github.com/diku-dk/cpprandom/random"
 
-module dist = uniform_int_distribution i64 xorshift128plus
+local
+def hash (x: i32) : i32 =
+  let x = u32.i32 x
+  let x = ((x >> 16) ^ x) * 0x45d9f3b
+  let x = ((x >> 16) ^ x) * 0x45d9f3b
+  let x = ((x >> 16) ^ x)
+  in i32.u32 x
 
 entry gen (n: i64) (lo: i64) (hi: i64) : []i64 =
-  (loop (rng, out) =
-          (xorshift128plus.rng_from_seed [42], replicate n 0)
-   for i < n do
-     let (rng, x) = dist.rand (lo, hi) rng
-     in (rng, out with [i] = x)).1
+  let xs = iota n
+  in map (\i ->
+    let h = hash (i32.i64 i)
+    let r = u32.i32 h
+    in lo + i64.u32 r % (hi - lo + 1)
+  ) xs
 
 def get (x: i64) (i: i64) : i64 =
   x + i
