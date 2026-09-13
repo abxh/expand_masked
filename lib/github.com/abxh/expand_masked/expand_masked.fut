@@ -45,6 +45,7 @@ local module expand_masked_32 = expand_masked_generic bitmask_32
 local module expand_masked_64 = expand_masked_generic bitmask_64
 local module expand_masked_128 = expand_masked_generic bitmask_128
 local module expand_masked_256 = expand_masked_generic bitmask_256
+local module expand_masked_512 = expand_masked_generic bitmask_512
 
 -- | expand_masked with dynamic dispatch given max_segment_size selecting
 -- the fixed-size method. Preferably use fixed-size method for better performance.
@@ -72,13 +73,13 @@ def expand_masked_8 = expand_masked_8.expand_masked
 -- | expand with segments expanding to at most 16 elements pr segment
 def expand_masked_16 = expand_masked_16.expand_masked
 
--- | expand with segments expanding to at most 16 elements pr segment
+-- | expand with segments expanding to at most 64 elements pr segment
 def expand_masked_32 = expand_masked_32.expand_masked
 
--- | expand with segments expanding to at most 32 elements pr segment
+-- | expand with segments expanding to at most 64 elements pr segment
 def expand_masked_64 = expand_masked_64.expand_masked
 
--- | expand with segments expanding to at most 64 elements pr segment
+-- | expand with segments expanding to at most 128 elements pr segment
 def expand_masked_128 = expand_masked_128.expand_masked
 
 -- | expand with segments expanding to at most 256 elements pr segment
