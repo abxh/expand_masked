@@ -9,7 +9,7 @@
 -- script input { (128i64, gen 100000i64 0i64 128i64) }
 -- script input { (256i64, gen 100000i64 0i64 256i64) }
 
-import "../lib/github.com/abxh/expand_masked/expand_masked"
+import "lib/github.com/abxh/expand_masked/expand_masked"
 
 local
 def hash (x: i32) : i32 =
