@@ -79,7 +79,7 @@ module type bitmask = {
   val difference : t -> t -> t
   val complement : t -> t
   val is_subset : t -> t -> bool
-  val (==) : t -> t -> bool
+  val == : t -> t -> bool
 
   val member : t -> i64 -> bool
   val set : t -> i64 -> bool -> t
