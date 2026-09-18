@@ -1,7 +1,7 @@
 -- expand_masked vs naive expand-filter
 --
 -- ==
--- entry: bench_filter_ref bench_filter
+-- entry: bench_masked bench_filter
 -- script input { gen 1000000i64 0i64  8i64 }
 -- script input { gen 1000000i64 0i64 16i64 }
 -- script input { gen 1000000i64 0i64 32i64 }
@@ -38,5 +38,5 @@ def pred (x: i64) (i: i64) : bool =
 entry bench_masked (xs: []i64) : []i64 =
   expand_masked id get pred xs
 
-entry bench_filter_ref (xs: []i64) : []i64 =
+entry bench_filter (xs: []i64) : []i64 =
   expand_filter id get pred xs
