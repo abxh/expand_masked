@@ -2,14 +2,14 @@
 --
 -- ==
 -- entry: bench_masked bench_filter
--- script input { gen 1000000i64 0i64  8i64 }
--- script input { gen 1000000i64 0i64 16i64 }
--- script input { gen 1000000i64 0i64 32i64 }
--- script input { gen 1000000i64 0i64 64i64 }
--- script input { gen 1000000i64 0i64 128i64 }
--- script input { gen 1000000i64 0i64 256i64 }
--- script input { gen 1000000i64 0i64 512i64 }
--- script input { gen 1000000i64 0i64 1024i64 }
+-- script input { gen 100000i64 0i64  8i64 }
+-- script input { gen 100000i64 0i64 16i64 }
+-- script input { gen 100000i64 0i64 32i64 }
+-- script input { gen 100000i64 0i64 64i64 }
+-- script input { gen 100000i64 0i64 128i64 }
+-- script input { gen 100000i64 0i64 256i64 }
+-- script input { gen 100000i64 0i64 512i64 }
+-- script input { gen 100000i64 0i64 1024i64 }
 
 import "lib/github.com/abxh/expand_masked/expand_masked"
 

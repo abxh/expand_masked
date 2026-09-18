@@ -7,24 +7,28 @@ See the considerations that went into this design [here](https://github.com/diku
 Both benchmarks are carried out on the cuda backend. Note, the implementation assumes
 calls to `pred` is cheap, as it sequentially calls up to 64 `pred` at a time.
 
-On an Nvidia M2000M with `1000000` elements, `expand_masked` provides a 2x speedup
+On an Nvidia M2000M with 10K elements, `expand_masked` provides a 2x speedup
 over the naive expand-filter.
 ```
 bench.fut:bench_masked (no tuning file):
-(8i64, gen 100000i64 0i64 8i64):            727μs (95% CI: [     717.5,      737.4])
-(16i64, gen 100000i64 0i64 16i64):         1158μs (95% CI: [    1143.9,     1173.6])
-(32i64, gen 100000i64 0i64 32i64):         2073μs (95% CI: [    2053.1,     2095.4])
-(64i64, gen 100000i64 0i64 64i64):         4283μs (95% CI: [    4250.8,     4321.1])
-(128i64, gen 100000i64 0i64 128i64):      13297μs (95% CI: [   13228.4,    13367.6])
-(256i64, gen 100000i64 0i64 256i64):      25641μs (95% CI: [   25570.6,    25742.0])
+gen 100000i64 0i64 8i64:          1159μs (95% CI: [    1141.7,     1177.5])
+gen 100000i64 0i64 16i64:         1537μs (95% CI: [    1520.8,     1555.9])
+gen 100000i64 0i64 32i64:         2450μs (95% CI: [    2422.9,     2479.5])
+gen 100000i64 0i64 64i64:         4434μs (95% CI: [    4399.8,     4471.8])
+gen 100000i64 0i64 128i64:        8003μs (95% CI: [    7950.0,     8066.8])
+gen 100000i64 0i64 256i64:       14916μs (95% CI: [   14852.7,    15011.1])
+gen 100000i64 0i64 512i64:       28711μs (95% CI: [   28638.8,    28781.7])
+gen 100000i64 0i64 1024i64:      56202μs (95% CI: [   56069.1,    56345.8])
 
 bench.fut:bench_filter (no tuning file):
-(8i64, gen 100000i64 0i64 8i64):           1331μs (95% CI: [    1314.2,     1349.9])
-(16i64, gen 100000i64 0i64 16i64):         2212μs (95% CI: [    2185.3,     2241.9])
-(32i64, gen 100000i64 0i64 32i64):         3859μs (95% CI: [    3826.1,     3895.8])
-(64i64, gen 100000i64 0i64 64i64):         7051μs (95% CI: [    7002.0,     7108.3])
-(128i64, gen 100000i64 0i64 128i64):      14144μs (95% CI: [   14050.6,    14246.2])
-(256i64, gen 100000i64 0i64 256i64):      25574μs (95% CI: [   25514.2,    25634.4])
+gen 100000i64 0i64 8i64:          1399μs (95% CI: [    1383.3,     1417.4])
+gen 100000i64 0i64 16i64:         2367μs (95% CI: [    2341.7,     2395.5])
+gen 100000i64 0i64 32i64:         4205μs (95% CI: [    4163.0,     4254.6])
+gen 100000i64 0i64 64i64:         7692μs (95% CI: [    7628.9,     7769.2])
+gen 100000i64 0i64 128i64:       14597μs (95% CI: [   14486.7,    14735.1])
+gen 100000i64 0i64 256i64:       28216μs (95% CI: [   27963.0,    28553.6])
+gen 100000i64 0i64 512i64:       55491μs (95% CI: [   54913.2,    56524.3])
+gen 100000i64 0i64 1024i64:     110022μs (95% CI: [  108826.3,   111762.0])
 ```
 
 On an Nvidia A100 with 1M elements, `expand_masked` shows an increasingly large
