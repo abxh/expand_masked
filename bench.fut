@@ -1,13 +1,15 @@
 -- expand_masked vs naive expand-filter
 --
 -- ==
--- entry: bench_masked bench_filter
--- script input { (8i64,   gen 100000i64 0i64 8i64) }
--- script input { (16i64,  gen 100000i64 0i64 16i64) }
--- script input { (32i64,  gen 100000i64 0i64 32i64) }
--- script input { (64i64,  gen 100000i64 0i64 64i64) }
--- script input { (128i64, gen 100000i64 0i64 128i64) }
--- script input { (256i64, gen 100000i64 0i64 256i64) }
+-- entry: bench_filter_ref bench_filter
+-- script input { gen 1000000i64 0i64  8i64 }
+-- script input { gen 1000000i64 0i64 16i64 }
+-- script input { gen 1000000i64 0i64 32i64 }
+-- script input { gen 1000000i64 0i64 64i64 }
+-- script input { gen 1000000i64 0i64 128i64 }
+-- script input { gen 1000000i64 0i64 256i64 }
+-- script input { gen 1000000i64 0i64 512i64 }
+-- script input { gen 1000000i64 0i64 1024i64 }
 
 import "lib/github.com/abxh/expand_masked/expand_masked"
 
@@ -22,10 +24,10 @@ def hash (x: i32) : i32 =
 entry gen (n: i64) (lo: i64) (hi: i64) : []i64 =
   let xs = iota n
   in map (\i ->
-    let h = hash (i32.i64 i)
-    let r = u32.i32 h
-    in lo + i64.u32 r % (hi - lo + 1)
-  ) xs
+            let h = hash (i32.i64 i)
+            let r = u32.i32 h
+            in lo + i64.u32 r % (hi - lo + 1))
+         xs
 
 def get (x: i64) (i: i64) : i64 =
   x + i
@@ -33,8 +35,8 @@ def get (x: i64) (i: i64) : i64 =
 def pred (x: i64) (i: i64) : bool =
   (x * 31 + i * 17) % 100 < 50
 
-entry bench_masked (max_segment_size: i64) (xs: []i64) : []i64 =
-  expand_masked max_segment_size id get pred xs
+entry bench_masked (xs: []i64) : []i64 =
+  expand_masked id get pred xs
 
-entry bench_filter (_: i64) (xs: []i64) : []i64 =
+entry bench_filter_ref (xs: []i64) : []i64 =
   expand_filter id get pred xs
