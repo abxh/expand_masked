@@ -1,5 +1,3 @@
--- | Implementation of flattening by expansion with filtering
-
 import "../../diku-dk/segmented/segmented"
 
 -- | Expansion function with an additional predicate function ``pred`` that takes
@@ -101,8 +99,9 @@ def expand_masked 'a 'b
   let f (xi, o, n) =
     let mask =
       loop mask = 0
-      for i < n do
-        u64.set_bit (i32.i64 i) mask (i32.bool <| pred arr[xi] (o + i))
+      for i < num_bits do
+        let b = if i < n then pred arr[xi] (o + i) else false
+        in u64.set_bit (i32.i64 i) mask (i32.bool b)
     in (xi, o, mask)
   let get' (xi, o, mask) j =
     let i = i64.i32 <| select_u64 mask (i32.i64 j)
