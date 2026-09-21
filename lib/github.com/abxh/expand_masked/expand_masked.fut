@@ -1,4 +1,7 @@
+-- | Implementation of flattening by expansion with filtering
+
 import "../../diku-dk/segmented/segmented"
+import "bitmask"
 
 -- | Expansion function with an additional predicate function ``pred`` that takes
 -- the segment source element and segment index to pre-filter them before obtaining
@@ -19,95 +22,36 @@ def expand_filter 'a 'b
      |> filter (\(i, j) -> pred arr[i] j)
      |> map (\(i, j) -> get arr[i] j)
 
-local
--- | Helper function to find the position of the k'th set bit in an u8
-#[inline]
-def select_u8 (b: u8) (k: i32) : i32 =
-  let f b = b & (b - 1)
-  let s0 = b
-  let s1 = f s0
-  let s2 = f s1
-  let s3 = f s2
-  let s4 = f s3
-  let s5 = f s4
-  let s6 = f s5
-  let s7 = f s6
-  let w =
-    match k
-    case 0 -> s0
-    case 1 -> s1
-    case 2 -> s2
-    case 3 -> s3
-    case 4 -> s4
-    case 5 -> s5
-    case 6 -> s6
-    case 7 -> s7
-    case _ -> 0u8
-  in u8.ctz w
-
-local
--- | Helper function to find the position of the k'th set bit in an u16
-#[inline]
-def select_u16 (b: u16) (k: i32) : i32 =
-  let lower = u8.u16 b
-  let upper = b >> 8 |> u8.u16
-  let low_count = u8.popc lower
-  in if k < low_count
-     then select_u8 lower k
-     else select_u8 upper (k - low_count) + 8
-
-local
--- | Helper function to find the position of the k'th set bit in an u32
-#[inline]
-def select_u32 (b: u32) (k: i32) : i32 =
-  let lower = u16.u32 b
-  let upper = b >> 16 |> u16.u32
-  let low_count = u16.popc lower
-  in if k < low_count
-     then select_u16 lower k
-     else select_u16 upper (k - low_count) + 16
-
-local
--- | Helper function to find the position of the k'th set bit in an u64
-#[inline]
-def select_u64 (b: u64) (k: i32) : i32 =
-  let lower = u32.u64 b
-  let upper = b >> 32 |> u32.u64
-  let low_count = u32.popc lower
-  in if k < low_count
-     then select_u32 lower k
-     else select_u32 upper (k - low_count) + 32
+local module B = bitmask_32
 
 -- | Alternative implementation to expand-filter
---
--- Can be more efficient than a naive expand-filter when ``pred`` is cheap, as it is
--- run sequentially 64 at a time.
 def expand_masked 'a 'b
                   (sz: a -> i64)
                   (get: a -> i64 -> b)
                   (pred: a -> i64 -> bool)
                   (arr: []a) : *[]b =
-  let num_bits = i64.i32 u64.num_bits
   let szs = map sz arr
   let arr_szs =
     zip (indices arr) szs
-    |> expand (\(_, s) -> (s + num_bits - 1) / num_bits)
+    |> expand (\(_, s) -> (s + B.num_bits - 1) / B.num_bits)
               (\(xi, s) i ->
-                 let o = num_bits * i
-                 let n = i64.min num_bits (s - o)
+                 let o = B.num_bits * i
+                 let n = i64.min B.num_bits (s - o)
                  in (xi, o, n))
-  let f (xi, o, n) =
-    let mask =
-      loop mask = 0
-      for i < num_bits do
-        let b = if i < n then pred arr[xi] (o + i) else false
-        in u64.set_bit (i32.i64 i) mask (i32.bool b)
-    in (xi, o, mask)
+  let f (xi, o, n) i =
+    let b = if i < n then pred arr[xi] (o + i) else false
+    in B.set B.empty i b
+  let arr_szs' = 
+    #[incremental_flattening(only_intra)]
+    map (\(xi, o, n) -> 
+      let iot = iota B.num_bits
+      let flags = map (\i -> f (xi, o, n) i) iot
+      in (xi, o, reduce_comm B.union B.empty flags))
+    arr_szs
   let get' (xi, o, mask) j =
-    let i = i64.i32 <| select_u64 mask (i32.i64 j)
+    let i = B.select mask j
     in get arr[xi] (o + i)
-  let arr_szs' = map f arr_szs
-  in expand (\(_, _, mask) -> i64.i32 <| u64.popc mask) get' arr_szs'
+  in expand (\(_, _, mask) -> B.rank mask) get' arr_szs'
 
 -- | Expansion function with an additional predicate function ``pred`` that takes
 -- the target element to filter. This calls ``get`` twice for every target element
