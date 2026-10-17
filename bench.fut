@@ -12,6 +12,18 @@
 -- script input { gen 100000i64 0i64 1024i64 }
 
 import "lib/github.com/abxh/expand_masked/expand_masked"
+import "lib/github.com/diku-dk/segmented/segmented"
+
+def expand_filter 'a 'b
+                  (sz: a -> i64)
+                  (get: a -> i64 -> b)
+                  (pred: a -> i64 -> bool)
+                  (arr: []a) : []b =
+  let szs = map sz arr
+  let (idxs, iotas) = repl_segm_iota szs
+  in zip idxs iotas
+     |> filter (\(i, j) -> pred arr[i] j)
+     |> map (\(i, j) -> get arr[i] j)
 
 local
 def hash (x: i32) : i32 =
