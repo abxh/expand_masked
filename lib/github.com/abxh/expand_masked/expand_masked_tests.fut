@@ -1,6 +1,19 @@
 -- | ignore
 
 import "expand_masked"
+import "../../diku-dk/segmented/segmented"
+
+local
+def expand_filter 'a 'b
+                  (sz: a -> i64)
+                  (get: a -> i64 -> b)
+                  (pred: a -> i64 -> bool)
+                  (arr: []a) : []b =
+  let szs = map sz arr
+  let (idxs, iotas) = repl_segm_iota szs
+  in zip idxs iotas
+     |> filter (\(i, j) -> pred arr[i] j)
+     |> map (\(i, j) -> get arr[i] j)
 
   -- ==
 -- entry: test_expand_filter test_expand_masked
