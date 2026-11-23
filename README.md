@@ -7,8 +7,8 @@ See the considerations that went into this design [here](https://github.com/diku
 Both benchmarks are carried out on the cuda backend. Note, the implementation assumes
 calls to `pred` is cheap, as it sequentially calls up to 64 `pred` at a time.
 
-On an Nvidia A100 with 1M elements, `expand_masked` shows an increasingly large
-speedup as segment size increases, reaching 2x speedup at segment size 1024.
+On futhark version `0.27.1` an Nvidia A100 with 1M elements, `expand_masked` shows an
+increasingly large speedup as segment size increases, reaching 2x speedup at segment size 1024.
 
 ```
 bench.fut:bench_masked (no tuning file):
