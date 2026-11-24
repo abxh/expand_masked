@@ -6,6 +6,7 @@ module expand_masked_generic
     type t
     val num_bits : i64
     val empty : t
+    val union : t -> t -> t
     val set : t -> i64 -> bool -> t
     val rank : t -> i64
     val select : t -> i64 -> i64
@@ -16,25 +17,26 @@ module expand_masked_generic
                     (pred: a -> i64 -> bool)
                     (arr: []a) : *[]b =
     let szs = map sz arr
-    let arr_szs =
+    let (xs, os, ns) =
       zip (indices arr) szs
       |> expand (\(_, s) -> (s + M.num_bits - 1) / M.num_bits)
                 (\(xi, s) i ->
                    let o = M.num_bits * i
                    let n = i64.min M.num_bits (s - o)
-                   in (xi, o, n))
-    let f (xi, o, n) =
-      let mask =
-        loop mask = M.empty
-        for i < M.num_bits do
-          let b = if i < n then pred arr[xi] (o + i) else false
-          in M.set mask i b
-      in (xi, o, mask)
-    let get' (xi, o, mask) j =
+                   in (arr[xi], o, n))
+      |> unzip3
+    let (is, segm_idxs) = repl_segm_iota ns
+    let vs =
+      map2 (\(is: i64) (segm_idx: i64) ->
+              let b = if segm_idx < ns[is] then pred xs[is] (os[is] + segm_idx) else false
+              in M.set M.empty segm_idx b)
+           is
+           segm_idxs
+    let masks = reduce_by_index (map (const M.empty) xs) M.union M.empty is vs
+    let get' (x, o, mask) j =
       let i = M.select mask j
-      in get arr[xi] (o + i)
-    let arr_szs' = map f arr_szs
-    in expand (\(_, _, mask) -> M.rank mask) get' arr_szs'
+      in get x (o + i)
+    in expand (\(_, _, mask) -> M.rank mask) get' (zip3 xs os masks)
 }
 
 local module expand_masked_default = expand_masked_generic bitmask_8
