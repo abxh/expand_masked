@@ -1,7 +1,5 @@
 # expand_masked
 
-See the considerations that went into this design [here](https://github.com/diku-dk/segmented/pull/13).
-
 ## Benchmarks
 
 Both benchmarks are carried out on the cuda backend. Note, the implementation assumes
